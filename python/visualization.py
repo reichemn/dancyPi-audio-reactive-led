@@ -6,6 +6,10 @@ from scipy.ndimage.filters import gaussian_filter1d
 import config
 import microphone
 import dsp
+if __name__ == '__main__':
+    if config.USE_GUI:
+        import pyqtgraph as pg
+        from pyqtgraph.Qt import QtGui, QtCore
 import led
 import sys
 

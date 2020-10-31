@@ -30,6 +30,11 @@ elif config.DEVICE == 'blinkstick':
     # Create a listener that turns the leds off when the program terminates
     signal.signal(signal.SIGTERM, signal_handler)
     signal.signal(signal.SIGINT, signal_handler)
+elif config.DEVICE == 'simulator':
+    from stripe_simulator import LEDStripe
+    from PyQt5.QtWidgets import QApplication
+    app = QApplication([])
+    stripe = LEDStripe(config.N_PIXELS)
 
 _gamma = np.load(config.GAMMA_TABLE_PATH)
 """Gamma lookup table used for nonlinear brightness correction"""
@@ -135,6 +140,11 @@ def _update_blinkstick():
     #send the data to the blinkstick
     stick.set_led_data(0, newstrip)
 
+def _update_simulator():
+    global pixels
+    pixels_t = np.transpose(pixels)
+    pixels_t = np.clip(pixels_t, 0, 255).astype(int)
+    stripe.update_stripe(pixels_t)
 
 def update():
     """Updates the LED strip values"""
@@ -144,6 +154,8 @@ def update():
         _update_pi()
     elif config.DEVICE == 'blinkstick':
         _update_blinkstick()
+    elif config.DEVICE == 'simulator':
+        _update_simulator()
     else:
         raise ValueError('Invalid device selected')
 
