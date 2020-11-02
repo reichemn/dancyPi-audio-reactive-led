@@ -13,7 +13,7 @@ class LEDStripe(QWidget):
         super().__init__()
 
         self.colorArray = []
-        self.pixel_hight = 40
+        self.pixel_hight = 180
         self.pixel_width = 10
         self.pixel_number = pixel_number
         self.initUI()

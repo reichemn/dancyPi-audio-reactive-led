@@ -1,0 +1,6 @@
+numpy
+scipy==1.4.1
+pyaudio
+PyQt5
+pyqtgraph
+pyserial

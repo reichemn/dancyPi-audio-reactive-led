@@ -30,11 +30,15 @@ elif config.DEVICE == 'blinkstick':
     # Create a listener that turns the leds off when the program terminates
     signal.signal(signal.SIGTERM, signal_handler)
     signal.signal(signal.SIGINT, signal_handler)
-elif config.DEVICE == 'simulator':
+elif config.DEVICE == 'simulator' or config.DEVICE == 'arduino&simulator':
     from stripe_simulator import LEDStripe
     from PyQt5.QtWidgets import QApplication
-    app = QApplication([])
+    QTapp = QApplication([])
     stripe = LEDStripe(config.N_PIXELS)
+
+if config.DEVICE == 'arduino' or config.DEVICE == 'arduino&simulator':
+    from arduino_stripe import ArduinoStripe
+    ardu_stripe = ArduinoStripe(config.SERIAL_PORT)
 
 _gamma = np.load(config.GAMMA_TABLE_PATH)
 """Gamma lookup table used for nonlinear brightness correction"""
@@ -145,6 +149,17 @@ def _update_simulator():
     pixels_t = np.transpose(pixels)
     pixels_t = np.clip(pixels_t, 0, 255).astype(int)
     stripe.update_stripe(pixels_t)
+    if __name__ == '__main__':
+        QTapp.processEvents()
+
+def _update_arduino():
+    global pixels
+    # clip values and apply brightness befor gamma correction
+    p = (np.clip(pixels, 0, 255) * config.STRIP_BRIGHTNESS).astype(np.uint8)
+    p = _gamma[p] if config.SOFTWARE_GAMMA_CORRECTION else np.copy(p)
+    p = p.transpose()
+    ardu_stripe.update(p)
+
 
 def update():
     """Updates the LED strip values"""
@@ -154,8 +169,11 @@ def update():
         _update_pi()
     elif config.DEVICE == 'blinkstick':
         _update_blinkstick()
-    elif config.DEVICE == 'simulator':
-        _update_simulator()
+    elif config.DEVICE == 'simulator' or config.DEVICE == 'arduino&simulator' or config.DEVICE == 'arduino':
+        if config.DEVICE == 'simulator' or config.DEVICE == 'arduino&simulator':
+            _update_simulator()
+        if config.DEVICE == 'arduino' or config.DEVICE == 'arduino&simulator':
+            _update_arduino()
     else:
         raise ValueError('Invalid device selected')
 
